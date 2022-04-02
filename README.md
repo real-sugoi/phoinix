@@ -1,10 +1,19 @@
-# phoinix
-Search S3 or CloudFront logs for a canary.
+<img src="./payloads/elmo.png" alt="elmo" width="675px" height="200px">
 
-Note that this does not create your S3/CloudFront infra for you, its only for live polling or searching historic results
+# PHOINIX - AWS Controlled Access Monitoring
+
+Create, monitor, and delete S3/CF/CW instances that monitor access.
+
+Useful for phishing campaigns and blind XSS payloads where you may need to serve a specific payload file. 
+
+Note that this will always create two buckets, one with public ACL's enabled and one without.
+
+e.g "my_bucket" and "my_bucket-[a-z0-9]{5,10}"
+
+[a-z0-9]{5,10} is an attempt avoid any sort of automated enumeration of buckets that attempts to associate an S3 with an active campaign based on how this tool creates buckets.
 
 # Installation
 pip install -r requirements.txt
 
 # Usage
-todo lol. hardcoded everything for now.
+phoinix.py -t my_tag -c s3 -ns my_bucket -p xss.html
