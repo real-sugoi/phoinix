@@ -9,11 +9,8 @@ from monitor import *
 
 PHOINIX_HELP = \
 '''
-PHOINIX - AWS S3 Access Monitoring
+PHOINIX - AWS Controlled Access Monitoring
 @ratiometric
-
-[+] New event detected, grabbing log and parsing output
-[*] Asset: Time:,  Source: IP, File: xyz, URI: /?canary=token 
 '''
 
 def main():
@@ -27,7 +24,7 @@ def main():
 		default=None)
 	parser.add_argument('-m','--monitor', metavar='s3|cf', help='Monitor existing stack',
 		default=None)
-	parser.add_argument('-r','--region', help='Location for resources (defaults us-west-2)',
+	parser.add_argument('-r','--region', help='Location for resources (defaults us-east-2)',
 		default="us-east-2", type=str, action='store')
 
 	parser.add_argument('-d','--delete', help='Prompt to delete S3/CF/CW assets with matching tag',
@@ -55,9 +52,20 @@ def main():
 
 	if(args.create):
 		if (args.create.lower()) == "s3":
-			if(create_bucket(session, args.bucket_name, args.tag_name, args.region, False)):
-				rng = ''.join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(1,10)))
-				create_bucket(session, args.bucket_name+'-'+rng, args.tag_name, args.region, True)
+			bucket_name = args.bucket_name
+			bucket_name_logs = args.bucket_name + '-' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(1,10)))
+			# Create public bucket
+			if(create_bucket(session, bucket_name, args.tag_name, args.region, False)):
+				# Create private bucket for logging
+				create_bucket(session, bucket_name_logs, args.tag_name, args.region, True)
+			else:
+				print("[x] Stack creation terminated. No assets have been created.")
+				return
+			# Enable logging of public bucket access to private bucket
+			enable_bucket_logging(session, bucket_name, bucket_name_logs, args.create)
+			# Enable CloudWatch for private bucket
+
+
 		elif (args.create.lower()) == "cf":
 			print("making cf")
 		else:

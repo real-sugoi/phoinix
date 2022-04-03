@@ -2,14 +2,7 @@ import boto3
 import botocore
 
 # Creates an S3
-def create_bucket(session, bucket_name, tag_name, region, privacy):
-	'''
-	Create an S3
-	:param credentials: Creds with xyz permission
-	:param bucket_name: Name of the bucket to create
-	:param region: Region to create bucket in
-	:param privacy: true = private, false = public
-	'''
+def create_bucket(session, bucket_name, tag_name, region, private_bucket):
 	s3_client = session.client('s3')
 	try:
 		s3_client.create_bucket(Bucket=bucket_name,
@@ -17,7 +10,7 @@ def create_bucket(session, bucket_name, tag_name, region, privacy):
 			'LocationConstraint': region
 			})
 		print("[+] Created bucket: " + bucket_name)
-		if(privacy):
+		if(private_bucket):
 			s3_client.put_public_access_block(
 					Bucket=bucket_name,
 					PublicAccessBlockConfiguration={
@@ -31,10 +24,43 @@ def create_bucket(session, bucket_name, tag_name, region, privacy):
 
 	except botocore.exceptions.ClientError as e:
 		print("[-] Bucket \"" + bucket_name + "\" exists.")
-		#the only reason this should fail is due to another bucket existing.
-		print(e)
 		return False
 	return True
+
+# Enable logging to log storage bucket
+def enable_bucket_logging(session, bucket_name_inbound, bucket_name_logstorage, log_type):
+	s3_client = session.client('s3')
+	try:
+		 s3_client.put_bucket_logging(
+			Bucket = bucket_name_inbound,
+			BucketLoggingStatus={
+				'LoggingEnabled': {
+					'TargetBucket': bucket_name_logstorage,
+					'TargetGrants': [
+					{
+						'Grantee': {
+							'Type': 'Group',
+							'URI': 'http://acs.amazonaws.com/groups/s3/LogDelivery'
+						},
+						'Permission': 'READ' },
+					{
+						'Grantee': {
+							'Type': 'Group',
+							'URI': 'http://acs.amazonaws.com/groups/s3/LogDelivery'
+						},
+						'Permission': 'WRITE'
+
+					},
+					],
+					'TargetPrefix': log_type + '-accesslogs/'
+				}
+			}
+		)
+		 print("[+] Enabled logging for " + bucket_name_inbound + " ---> " + bucket_name_logstorage)
+	except botocore.exceptions.ClientError as e:
+		print("[-] Error attempting to enable logging: " + e)
+		return False
+	return True 
 
 # Creates a CloudFront instance
 def create_cloudfront():
