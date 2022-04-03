@@ -16,4 +16,4 @@ e.g "my_bucket" and "my_bucket-[a-z0-9]{5,10}"
 pip install -r requirements.txt
 
 # Usage
-phoinix.py -t my_tag -c s3 -ns my_bucket -p xss.html
+phoinix.py -c s3 tagname bucketname
