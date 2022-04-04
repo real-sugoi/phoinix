@@ -53,7 +53,7 @@ def main():
 	if(args.create):
 		if (args.create.lower()) == "s3":
 			bucket_name = args.bucket_name
-			bucket_name_logs = args.bucket_name + '-' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(1,10)))
+			bucket_name_logs = args.bucket_name + '-' + ''.join(random.choices(string.ascii_lowercase + string.digits, k=random.randint(5,10)))
 			# Create public bucket
 			if(create_bucket(session, bucket_name, args.tag_name, args.region, False)):
 				# Create private bucket for logging
